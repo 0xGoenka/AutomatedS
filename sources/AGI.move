@@ -70,12 +70,13 @@ module mecha_character::mecha_character {
         suins: &mut SuiNS,
         wrapper: &mut SuiNSWrapper,
         suins_id: u64,
-        new_target: Option<address>,
+        new_target: address,
         clock: &Clock,
         _ctx: &mut TxContext
     ) {
         let registration = table::borrow_mut(&mut wrapper.suins_storage, suins_id);
-        direct_setup::set_target_address(suins, registration, new_target, clock);
+        let address_option = std::option::some(new_target);
+        direct_setup::set_target_address(suins, registration, address_option, clock);
     }
 
     public fun mint_example(
@@ -97,9 +98,9 @@ module mecha_character::mecha_character {
         // 100-999 suins id == 3
 
         if (nft_count == 1) {
-            set_suins_target(suins, wrapper, 1, option::some(one_address), clock, ctx);
-            set_suins_target(suins, wrapper, 2, option::some(zero_address), clock, ctx);
-            set_suins_target(suins, wrapper, 3, option::some(zero_address), clock, ctx);
+            update_suins_target(suins, wrapper, 1, one_address, clock, ctx);
+            update_suins_target(suins, wrapper, 2, zero_address, clock, ctx);
+            update_suins_target(suins, wrapper, 3, zero_address, clock, ctx);
         }
 
     }
