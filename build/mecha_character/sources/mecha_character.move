@@ -3,7 +3,6 @@ module mecha_character::mecha_character {
     use sui::package;
     use sui::table::{Self, Table};
     use std::string::{Self, String};
-    use utils::direct_setup::{Self};
     use suins::{
         domain, 
         registry::Registry, 
@@ -23,6 +22,8 @@ module mecha_character::mecha_character {
     public struct SuiDomain has key {
         id: UID,
     }
+
+    public struct DirectSetup has drop {}
 
      /// SUI NS STUFF
 
@@ -65,6 +66,24 @@ module mecha_character::mecha_character {
         }
     }
 
+
+  fun registry_mut(suins: &mut SuiNS): &mut Registry {
+        suins::app_registry_mut<DirectSetup, Registry>(DirectSetup {}, suins)
+    }
+
+       public fun set_target_address(
+        suins: &mut SuiNS,
+        nft: &SuinsRegistration,
+        new_target: Option<address>,
+        clock: &Clock,
+    ) {
+        let registry = registry_mut(suins);
+        registry.assert_nft_is_authorized(nft, clock);
+
+        let domain = nft.domain();
+        registry.set_target_address(domain, new_target);
+    }
+
     // table[suins_id] must already be created by save_suins_registration()
     public fun update_suins_target(
         suins: &mut SuiNS,
@@ -76,7 +95,7 @@ module mecha_character::mecha_character {
     ) {
         let registration = table::borrow_mut(&mut wrapper.suins_storage, suins_id);
         let address_option = std::option::some(new_target);
-        direct_setup::set_target_address(suins, registration, address_option, clock);
+        set_target_address(suins, registration, address_option, clock);
     }
 
     public fun mint_example(
